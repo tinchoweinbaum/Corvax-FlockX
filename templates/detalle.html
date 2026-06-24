@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="/" class="btn btn-secondary">&larr; Volver al listado</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">Perfil de Criticidad: {{ estudiante['Nombre Completo'] }}</h4>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <strong>Correo:</strong> {{ estudiante['Dirección de correo'] }}<br>
+                <strong>Institución:</strong> {{ estudiante['Institución'] }}<br>
+            </div>
+        </div>
+
+        <h5 class="border-bottom pb-2">Indicadores Moodle</h5>
+        <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Encuesta inicial
+                <span class="badge bg-info rounded-pill">{{ estudiante['Cuestionario:Corvax - Encuesta inicial (Real)'] }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Autodeclaración estado crítico
+                <span class="badge bg-warning text-dark rounded-pill">{{ estudiante['Cuestionario:Corvax - Autodeclaración estado crítico (Real)'] }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Encuesta Cuatrimestral
+                <span class="badge bg-info rounded-pill">{{ estudiante['Cuestionario:Corvax - Encuesta Cuatrimestral (Real)'] }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Cantidad de materias cursadas
+                <span class="badge bg-secondary rounded-pill">{{ estudiante['Cuestionario:Corvax - Cantidad de materias cursadas (Real)'] }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Entrevista
+                <span class="badge bg-primary rounded-pill">{{ estudiante['Cuestionario:Corvax - Entrevista (Real)'] }}</span>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
