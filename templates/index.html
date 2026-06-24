@@ -1,46 +1,236 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Listado de Estudiantes</h5>
-    </div>
-    <div class="card-body">
-        {% if estudiantes %}
-        <table class="table table-hover table-striped">
-            <thead>
-                <tr>
-                    <th>Nombre Completo</th>
-                    <th>Correo Electrónico</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for est in estudiantes %}
-                <tr>
-                    <td>{{ est['Nombre Completo'] }}</td>
-                    <td>{{ est['Dirección de correo'] }}</td>
-                    <td>
-                        <a href="/estudiante/{{ est['Dirección de correo'] }}" class="btn btn-sm btn-outline-primary">
-                            Analizar Criticidad
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="alert alert-info" role="alert">
-            <strong>Sin datos cargados.</strong> Por favor, cargue un archivo CSV o XLSX para comenzar.
-        </div>
-        <form method="POST" action="/cargar" enctype="multipart/form-data" class="mt-3">
-            <div class="mb-3">
-                <label for="archivo_moodle" class="form-label">Cargar archivo Moodle:</label>
-                <input type="file" class="form-control" id="archivo_moodle" name="archivo_moodle" accept=".csv,.xlsx" required>
+<style>
+    .file-card {
+        transition: all 0.3s ease;
+        border: 2px solid #dee2e6;
+    }
+    .file-card.loaded {
+        border-color: #28a745;
+        background-color: #f0fdf4;
+    }
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+    .file-input-wrapper input[type="file"] {
+        display: none;
+    }
+    .file-label {
+        display: block;
+        cursor: pointer;
+        padding: 15px;
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    .file-label:hover {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+    .file-status {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        display: none;
+    }
+    .file-status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: block;
+    }
+    .file-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+    }
+    .file-status.loading {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        display: block;
+    }
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .checkmark {
+        color: #28a745;
+        font-weight: bold;
+        margin-right: 8px;
+    }
+    .button-container {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .main-button {
+        font-size: 18px;
+        padding: 15px 50px;
+    }
+</style>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Cargador de Datos - FlockX</h4>
             </div>
-            <button type="submit" class="btn btn-primary">Cargar archivo</button>
-        </form>
-        {% endif %}
+            <div class="card-body">
+                <p class="text-muted mb-4">Cargue los archivos de datos para comenzar el análisis.</p>
+                
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card file-card" id="card-principal">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Archivo Principal de Moodle</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="file-input-wrapper">
+                                    <label class="file-label" for="archivo_moodle">
+                                        📁 Seleccionar archivo CSV o XLSX
+                                    </label>
+                                    <input type="file" id="archivo_moodle" name="archivo_moodle" accept=".csv,.xlsx">
+                                </div>
+                                <small class="form-text text-muted d-block mt-2">Exportación estándar de Moodle con calificaciones</small>
+                                <div class="file-status" id="status-principal"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4">
+                        <div class="card file-card" id="card-base-datos">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">Base de Datos de Moodle</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="file-input-wrapper">
+                                    <label class="file-label" for="archivo_base_datos">
+                                        📁 Seleccionar archivo CSV
+                                    </label>
+                                    <input type="file" id="archivo_base_datos" name="archivo_base_datos" accept=".csv">
+                                </div>
+                                <small class="form-text text-muted d-block mt-2">Exportación de la actividad "Base de Datos"</small>
+                                <div class="file-status" id="status-base-datos"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-container" id="button-container" style="display: none;">
+                    <a href="/analisis" class="btn btn-primary btn-lg">
+                        ✓ Ir a Análisis de Datos
+                    </a>
+                </div>
+
+                <div id="loading-message" class="text-center text-muted mt-3" style="display: none;">
+                    Ambos archivos cargados correctamente. El botón aparecerá en breve...
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="#" id="limpiar-link" class="text-danger text-decoration-none" style="display: none;">
+                        Limpiar datos y cargar nuevos
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+const archivoPrincipal = document.getElementById('archivo_moodle');
+const archivoBaseDatos = document.getElementById('archivo_base_datos');
+const buttonContainer = document.getElementById('button-container');
+const loadingMessage = document.getElementById('loading-message');
+const limpiarLink = document.getElementById('limpiar-link');
+const cardPrincipal = document.getElementById('card-principal');
+const cardBaseDatos = document.getElementById('card-base-datos');
+
+// Configurar event listeners para cambios de archivo
+archivoPrincipal.addEventListener('change', () => cargarArchivo('archivo_moodle', '/cargar', 'status-principal', cardPrincipal));
+archivoBaseDatos.addEventListener('change', () => cargarArchivo('archivo_base_datos', '/cargar_base_datos', 'status-base-datos', cardBaseDatos));
+
+function cargarArchivo(inputId, endpoint, statusId, card) {
+    const fileInput = document.getElementById(inputId);
+    const statusDiv = document.getElementById(statusId);
+    const file = fileInput.files[0];
+
+    if (!file) return;
+
+    // Mostrar estado de carga
+    statusDiv.className = 'file-status loading';
+    statusDiv.innerHTML = `<span class="spinner"></span>Cargando ${file.name}...`;
+
+    const formData = new FormData();
+    formData.append(inputId, file);
+
+    fetch(endpoint, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.exito) {
+            // Éxito
+            statusDiv.className = 'file-status success';
+            statusDiv.innerHTML = `<span class="checkmark">✓</span>${data.mensaje}`;
+            card.classList.add('loaded');
+            
+            // Verificar el estado general
+            setTimeout(verificarEstado, 500);
+        } else {
+            // Error
+            statusDiv.className = 'file-status error';
+            statusDiv.innerHTML = `<span>❌</span>${data.mensaje}`;
+        }
+    })
+    .catch(error => {
+        statusDiv.className = 'file-status error';
+        statusDiv.innerHTML = `<span>❌</span>Error en la carga: ${error.message}`;
+    });
+}
+
+function verificarEstado() {
+    fetch('/estado_archivos')
+    .then(response => response.json())
+    .then(data => {
+        // Actualizar estados visuales
+        if (data.archivo_principal) {
+            cardPrincipal.classList.add('loaded');
+        }
+        if (data.archivo_base_datos) {
+            cardBaseDatos.classList.add('loaded');
+        }
+
+        // Mostrar botón si ambos están cargados
+        if (data.ambos_cargados) {
+            loadingMessage.style.display = 'none';
+            buttonContainer.style.display = 'block';
+            limpiarLink.style.display = 'inline-block';
+            limpiarLink.href = '/limpiar';
+        }
+    });
+}
+
+// Verificar estado al cargar la página
+verificarEstado();
+
+// Auto-verificar cada 2 segundos
+setInterval(verificarEstado, 2000);
+</script>
 {% endblock %}
