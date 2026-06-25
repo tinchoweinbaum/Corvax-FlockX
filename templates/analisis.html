@@ -7,109 +7,188 @@
 
 <h2 class="mb-4">Análisis de Datos</h2>
 
-<div class="row">
-    <div class="col-lg-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Listado de Estudiantes</h5>
+<div class="mb-4">
+    <div class="btn-group" role="group" aria-label="Ventanas de análisis">
+        <button type="button" class="btn btn-outline-primary active" id="tab-estudiantes" onclick="mostrarVentana('estudiantes')">Ver listado de estudiantes</button>
+        <button type="button" class="btn btn-outline-primary" id="tab-materias" onclick="mostrarVentana('materias')">Ver listado de materias</button>
+        <button type="button" class="btn btn-outline-primary" id="tab-registros" onclick="mostrarVentana('registros')">Ver registros de base de datos</button>
+    </div>
+</div>
+
+<div id="ventana-estudiantes" class="ventana-activa">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Listado de Estudiantes</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <input type="search" id="search-estudiantes" class="form-control" placeholder="Buscar estudiante por nombre" oninput="filtrarEstudiantes()">
             </div>
-            <div class="card-body">
-                {% if estudiantes %}
-                <table class="table table-hover table-striped">
+            {% if estudiantes %}
+            <table class="table table-hover table-striped" id="tabla-estudiantes">
+                <thead>
+                    <tr>
+                        <th>Legajo</th>
+                        <th>Nombre Completo</th>
+                        <th>Correo Electrónico</th>
+                        <th>Estado de Alerta</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for est in estudiantes %}
+                    <tr class="{% if est.AlertaNivel == 3 %}tr-alerta-3{% elif est.AlertaNivel == 2 %}tr-alerta-2{% elif est.AlertaNivel == 1 %}tr-alerta-1{% endif %}">
+                        <td>{{ est.get('Legajo', '') }}</td>
+                        <td>{{ est['Nombre Completo'] }}</td>
+                        <td>{{ est['Dirección de correo'] }}</td>
+                        <td>
+                            <span class="badge {% if est.AlertaNivel == 3 %}alerta-3{% elif est.AlertaNivel == 2 %}alerta-2{% elif est.AlertaNivel == 1 %}alerta-1{% else %}bg-secondary{% endif %}">
+                                {{ est.AlertaEtiqueta }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/estudiante/{{ est['Dirección de correo'] }}" class="btn btn-sm btn-outline-primary">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                No hay estudiantes cargados.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="ventana-materias" class="d-none">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Listado de Materias</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <input type="search" id="search-materias" class="form-control" placeholder="Buscar materia" oninput="filtrarMaterias()">
+            </div>
+            {% if materia_stats %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-sm" id="tabla-materias">
                     <thead>
                         <tr>
-                            <th>Nombre Completo</th>
-                            <th>Correo Electrónico</th>
-                            <th>Acción</th>
+                            <th>Asignatura</th>
+                            <th>Cantidad de estudiantes</th>
+                            <th>% desaprobados</th>
+                            <th>Nota promedio</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for est in estudiantes %}
+                        {% for materia in materia_stats %}
                         <tr>
-                            <td>{{ est['Nombre Completo'] }}</td>
-                            <td>{{ est['Dirección de correo'] }}</td>
+                            <td>{{ materia.Asignatura }}</td>
+                            <td>{{ materia.CantidadEstudiantes }}</td>
+                            <td>{{ materia.PorcentajeDesaprobados }}%</td>
                             <td>
-                                <a href="/estudiante/{{ est['Dirección de correo'] }}" class="btn btn-sm btn-outline-primary">
-                                    Ver
-                                </a>
+                                {% if materia.NotaPromedio is not none %}
+                                    {{ materia.NotaPromedio }}
+                                {% else %}
+                                    -
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                {% else %}
-                <div class="alert alert-info" role="alert">
-                    No hay estudiantes cargados.
-                </div>
-                {% endif %}
             </div>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                No hay materias cargadas.
+            </div>
+            {% endif %}
         </div>
     </div>
+</div>
 
-    <div class="col-lg-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Materias</h5>
-            </div>
-            <div class="card-body">
-                {% if materias_unicas %}
-                <ul class="list-group list-group-flush">
-                    {% for materia in materias_unicas %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ materia }}
-                        <span class="badge bg-primary rounded-pill">
-                            {{ registros_base_datos | selectattr('Asignatura', 'equalto', materia) | list | length }}
-                        </span>
-                    </li>
+<div id="ventana-registros" class="d-none">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Registros de Base de Datos</h5>
+        </div>
+        <div class="card-body">
+            {% if registros_base_datos %}
+            <table class="table table-hover table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>Legajo</th>
+                        <th>Nombre</th>
+                        <th>Asignatura</th>
+                        <th>Nota</th>
+                        <th>Estado</th>
+                        <th>Validación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registros_base_datos %}
+                    <tr {% if reg['Coherencia'] == 'Incoherente' %}class="table-danger"{% endif %}>
+                        <td>{{ reg['Legajo'] }}</td>
+                        <td>{{ reg.get('Nombre', '') }} {{ reg.get('Apellido', '') }}</td>
+                        <td>{{ reg['Asignatura'] }}</td>
+                        <td>{{ reg['Nota'] }}</td>
+                        <td>{{ reg['Estado'] }}</td>
+                        <td>
+                            {% if reg['Coherencia'] == 'Incoherente' %}
+                                <span class="badge bg-danger">⚠️ Incoherente</span>
+                            {% else %}
+                                <span class="badge bg-success">✓ Ok</span>
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
-                </ul>
-                {% else %}
-                <div class="alert alert-info" role="alert">
-                    No hay materias cargadas.
-                </div>
-                {% endif %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                No hay registros de base de datos cargados.
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-{% if registros_base_datos %}
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-warning text-dark">
-        <h5 class="mb-0">Registros de Base de Datos - Verificación de Coherencia</h5>
-    </div>
-    <div class="card-body">
-        <table class="table table-hover table-striped table-sm">
-            <thead>
-                <tr>
-                    <th>Legajo</th>
-                    <th>Nombre</th>
-                    <th>Asignatura</th>
-                    <th>Nota</th>
-                    <th>Estado</th>
-                    <th>Validación</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reg in registros_base_datos %}
-                <tr {% if reg['Coherencia'] == 'Incoherente' %}class="table-danger"{% endif %}>
-                    <td>{{ reg['Legajo'] }}</td>
-                    <td>{{ reg.get('Nombre', '') }} {{ reg.get('Apellido', '') }}</td>
-                    <td>{{ reg['Asignatura'] }}</td>
-                    <td>{{ reg['Nota'] }}</td>
-                    <td>{{ reg['Estado'] }}</td>
-                    <td>
-                        {% if reg['Coherencia'] == 'Incoherente' %}
-                            <span class="badge bg-danger">⚠️ Incoherente</span>
-                        {% else %}
-                            <span class="badge bg-success">✓ Ok</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
+<script>
+function mostrarVentana(nombre) {
+    const ventanas = ['estudiantes', 'materias', 'registros'];
+    ventanas.forEach(v => {
+        const ventana = document.getElementById(`ventana-${v}`);
+        const boton = document.getElementById(`tab-${v}`);
+        if (v === nombre) {
+            ventana.classList.remove('d-none');
+            boton.classList.add('active');
+        } else {
+            ventana.classList.add('d-none');
+            boton.classList.remove('active');
+        }
+    });
+}
+
+function filtrarEstudiantes() {
+    const filtro = document.getElementById('search-estudiantes').value.toLowerCase();
+    const filas = document.querySelectorAll('#tabla-estudiantes tbody tr');
+    filas.forEach(fila => {
+        const nombre = fila.children[1].textContent.toLowerCase();
+        fila.style.display = nombre.includes(filtro) ? '' : 'none';
+    });
+}
+
+function filtrarMaterias() {
+    const filtro = document.getElementById('search-materias').value.toLowerCase();
+    const filas = document.querySelectorAll('#tabla-materias tbody tr');
+    filas.forEach(fila => {
+        const materia = fila.children[0].textContent.toLowerCase();
+        fila.style.display = materia.includes(filtro) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}

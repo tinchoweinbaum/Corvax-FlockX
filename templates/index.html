@@ -95,38 +95,56 @@
                 <p class="text-muted mb-4">Cargue los archivos de datos para comenzar el análisis.</p>
                 
                 <div class="row">
-                    <div class="col-lg-6 mb-4">
+                    <div class="col-lg-4 mb-4">
                         <div class="card file-card" id="card-principal">
                             <div class="card-header bg-info text-white">
-                                <h6 class="mb-0">Archivo Principal de Moodle</h6>
+                                <h6 class="mb-0">Archivo de Calificaciones del curso</h6>
                             </div>
                             <div class="card-body">
                                 <div class="file-input-wrapper">
                                     <label class="file-label" for="archivo_moodle">
-                                        📁 Seleccionar archivo CSV o XLSX
+                                        📁 Seleccionar archivo de calificaciones (CSV o XLSX)
                                     </label>
                                     <input type="file" id="archivo_moodle" name="archivo_moodle" accept=".csv,.xlsx">
                                 </div>
-                                <small class="form-text text-muted d-block mt-2">Exportación estándar de Moodle con calificaciones</small>
+                                <small class="form-text text-muted d-block mt-2">Archivo con calificaciones del curso. El parser acepta columnas de nombre, apellido y correo con nombres similares.</small>
                                 <div class="file-status" id="status-principal"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-lg-6 mb-4">
+                    <div class="col-lg-4 mb-4">
                         <div class="card file-card" id="card-base-datos">
                             <div class="card-header bg-success text-white">
-                                <h6 class="mb-0">Base de Datos de Moodle</h6>
+                                <h6 class="mb-0">Archivo de Seguimiento de Notas</h6>
                             </div>
                             <div class="card-body">
                                 <div class="file-input-wrapper">
                                     <label class="file-label" for="archivo_base_datos">
-                                        📁 Seleccionar archivo CSV
+                                        📁 Seleccionar archivo de seguimiento de notas (CSV)
                                     </label>
                                     <input type="file" id="archivo_base_datos" name="archivo_base_datos" accept=".csv">
                                 </div>
-                                <small class="form-text text-muted d-block mt-2">Exportación de la actividad "Base de Datos"</small>
+                                <small class="form-text text-muted d-block mt-2">Archivo CSV con registros de la actividad de seguimiento de notas.</small>
                                 <div class="file-status" id="status-base-datos"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 mb-4">
+                        <div class="card file-card" id="card-legajos">
+                            <div class="card-header bg-warning text-white">
+                                <h6 class="mb-0">Archivo de Legajos</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="file-input-wrapper">
+                                    <label class="file-label" for="archivo_legajos">
+                                        📁 Seleccionar archivo de legajos (CSV)
+                                    </label>
+                                    <input type="file" id="archivo_legajos" name="archivo_legajos" accept=".csv">
+                                </div>
+                                <small class="form-text text-muted d-block mt-2">Archivo CSV con legajos, correos y nombres.</small>
+                                <div class="file-status" id="status-legajos"></div>
                             </div>
                         </div>
                     </div>
@@ -155,15 +173,18 @@
 <script>
 const archivoPrincipal = document.getElementById('archivo_moodle');
 const archivoBaseDatos = document.getElementById('archivo_base_datos');
+const archivoLegajos = document.getElementById('archivo_legajos');
 const buttonContainer = document.getElementById('button-container');
 const loadingMessage = document.getElementById('loading-message');
 const limpiarLink = document.getElementById('limpiar-link');
 const cardPrincipal = document.getElementById('card-principal');
 const cardBaseDatos = document.getElementById('card-base-datos');
+const cardLegajos = document.getElementById('card-legajos');
 
 // Configurar event listeners para cambios de archivo
 archivoPrincipal.addEventListener('change', () => cargarArchivo('archivo_moodle', '/cargar', 'status-principal', cardPrincipal));
 archivoBaseDatos.addEventListener('change', () => cargarArchivo('archivo_base_datos', '/cargar_base_datos', 'status-base-datos', cardBaseDatos));
+archivoLegajos.addEventListener('change', () => cargarArchivo('archivo_legajos', '/cargar_legajos', 'status-legajos', cardLegajos));
 
 function cargarArchivo(inputId, endpoint, statusId, card) {
     const fileInput = document.getElementById(inputId);
@@ -216,9 +237,12 @@ function verificarEstado() {
         if (data.archivo_base_datos) {
             cardBaseDatos.classList.add('loaded');
         }
+        if (data.archivo_legajos) {
+            cardLegajos.classList.add('loaded');
+        }
 
-        // Mostrar botón si ambos están cargados
-        if (data.ambos_cargados) {
+        // Mostrar botón si los tres archivos están cargados
+        if (data.listo_para_analisis) {
             loadingMessage.style.display = 'none';
             buttonContainer.style.display = 'block';
             limpiarLink.style.display = 'inline-block';

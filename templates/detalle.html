@@ -12,34 +12,66 @@
     <div class="card-body">
         <div class="row mb-4">
             <div class="col-md-6">
+                <strong>Legajo:</strong> {{ legajo or 'No disponible' }}<br>
                 <strong>Correo:</strong> {{ estudiante['Dirección de correo'] }}<br>
-                <strong>Institución:</strong> {{ estudiante['Institución'] }}<br>
+                <strong>Estado de Alerta:</strong>
+                <span class="badge {% if estudiante.AlertaNivel == 3 %}alerta-3{% elif estudiante.AlertaNivel == 2 %}alerta-2{% elif estudiante.AlertaNivel == 1 %}alerta-1{% else %}bg-secondary{% endif %}">
+                    {{ estudiante.AlertaEtiqueta or 'No disponible' }}
+                </span>
+                <br>
+                {% if estudiante.get('Grupos') %}
+                <strong>Grupos:</strong> {{ estudiante['Grupos'] }}<br>
+                {% endif %}
             </div>
         </div>
 
-        <h5 class="border-bottom pb-2">Indicadores Moodle</h5>
+        {% if notas_legajo %}
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Notas por Legajo</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            {% for columna in notas_legajo[0].keys() %}
+                                <th>{{ columna }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nota in notas_legajo %}
+                        <tr {% if nota.get('Coherencia') == 'Incoherente' %}class="table-danger"{% endif %}>
+                            {% for valor in nota.values() %}
+                                <td>{{ valor }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning" role="alert">
+            No se encontraron notas para el legajo {{ legajo or 'desconocido' }}.
+        </div>
+        {% endif %}
+
+        <h5 class="border-bottom pb-2">Indicadores de Calificaciones</h5>
+        {% if indicadores %}
         <ul class="list-group list-group-flush mb-4">
+            {% for indicador in indicadores %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                Encuesta inicial
-                <span class="badge bg-info rounded-pill">{{ estudiante['Cuestionario:Corvax - Encuesta inicial (Real)'] }}</span>
+                {{ indicador }}
+                <span class="badge bg-secondary rounded-pill">{{ estudiante[indicador] | default('-', true) }}</span>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Autodeclaración estado crítico
-                <span class="badge bg-warning text-dark rounded-pill">{{ estudiante['Cuestionario:Corvax - Autodeclaración estado crítico (Real)'] }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Encuesta Cuatrimestral
-                <span class="badge bg-info rounded-pill">{{ estudiante['Cuestionario:Corvax - Encuesta Cuatrimestral (Real)'] }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Cantidad de materias cursadas
-                <span class="badge bg-secondary rounded-pill">{{ estudiante['Cuestionario:Corvax - Cantidad de materias cursadas (Real)'] }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Entrevista
-                <span class="badge bg-primary rounded-pill">{{ estudiante['Cuestionario:Corvax - Entrevista (Real)'] }}</span>
-            </li>
+            {% endfor %}
         </ul>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            No hay indicadores de calificaciones disponibles.
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
