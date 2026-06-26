@@ -20,6 +20,16 @@
     .card-body {
         background: rgba(15, 23, 42, 0.95);
     }
+    /* Ensure legajo notes table fits the container and wraps long cells */
+    .card-body .table {
+        width: 100%;
+        table-layout: fixed;
+    }
+    .card-body .table td, .card-body .table th {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        max-width: 220px;
+    }
     .list-group-item {
         background: rgba(255, 255, 255, 0.025);
         border: 1px solid rgba(148, 163, 184, 0.08);
@@ -68,7 +78,8 @@
                 <h5 class="mb-0">Notas por Legajo</h5>
             </div>
             <div class="card-body p-0">
-                <table class="table table-hover mb-0">
+                <div class="table-responsive">
+                <table class="table mb-0">
                     <thead>
                         <tr>
                             {% for columna in notas_legajo[0].keys() %}
@@ -86,6 +97,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
         {% else %}

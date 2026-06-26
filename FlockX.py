@@ -268,6 +268,12 @@ def analisis():
                 'NotaPromedio': round(promedio_nota, 2) if pd.notna(promedio_nota) else None
             })
 
+        # Ordenar las materias por porcentaje de desaprobados, descendente
+        try:
+            materia_stats.sort(key=lambda m: m.get('PorcentajeDesaprobados', 0), reverse=True)
+        except Exception:
+            pass
+
     return render_template('analisis.html', 
                          estudiantes=estudiantes, 
                          registros_base_datos=registros_base_datos,
