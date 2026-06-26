@@ -1,11 +1,65 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .page-header h2 {
+        margin: 0;
+        font-size: 2rem;
+        letter-spacing: 0.02em;
+    }
+    .btn-group .btn {
+        min-width: 190px;
+        font-weight: 500;
+    }
+    .btn-group .btn.active,
+    .btn-group .btn:focus {
+        background-color: rgba(245, 158, 11, 0.14);
+        color: var(--text) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    .form-control {
+        border-radius: 16px;
+    }
+    .table-responsive {
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(15, 23, 42, 0.95);
+    }
+    .card-body {
+        background: rgba(15, 23, 42, 0.95);
+    }
+    .table {
+        color: var(--text) !important;
+    }
+    .table th,
+    .table td {
+        white-space: nowrap;
+        color: var(--text) !important;
+    }
+    .table thead th {
+        color: var(--text) !important;
+    }
+    .card.shadow-sm {
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+</style>
+
 <div class="mb-3">
     <a href="/" class="btn btn-secondary">&larr; Volver a Cargador de Datos</a>
 </div>
 
-<h2 class="mb-4">Análisis de Datos</h2>
+<div class="page-header mb-4">
+    <h2>Análisis de Datos</h2>
+</div>
 
 <div class="mb-4">
     <div class="btn-group" role="group" aria-label="Ventanas de análisis">

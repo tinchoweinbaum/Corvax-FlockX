@@ -1,17 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .profile-header {
+        padding: 1.25rem 1.5rem;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 24px;
+        margin-bottom: 1.5rem;
+    }
+    .profile-header h4 {
+        margin-bottom: 0;
+        letter-spacing: 0.01em;
+    }
+    .profile-meta strong {
+        display: inline-block;
+        width: 8.5rem;
+    }
+    .card-body {
+        background: rgba(15, 23, 42, 0.95);
+    }
+    .list-group-item {
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 16px;
+        margin-bottom: 0.8rem;
+    }
+    .badge.rounded-pill {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+    }
+    .card-header.bg-dark {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+    }
+    .table-hover tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
+
 <div class="mb-3">
     <a href="/analisis" class="btn btn-secondary">&larr; Volver al Análisis</a>
 </div>
 
 <div class="card shadow-sm border-0">
-    <div class="card-header bg-dark text-white">
+    <div class="card-header bg-dark text-white profile-header">
         <h4 class="mb-0">Perfil de Criticidad: {{ estudiante['Nombre Completo'] }}</h4>
     </div>
     <div class="card-body">
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md-6 profile-meta">
                 <strong>Legajo:</strong> {{ legajo or 'No disponible' }}<br>
                 <strong>Correo:</strong> {{ estudiante['Dirección de correo'] }}<br>
                 <strong>Estado de Alerta:</strong>
